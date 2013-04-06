@@ -2,9 +2,20 @@
 
 This is a short version of the excellent tutorial 
 [modern-cljs](https://github.com/magomimmo/modern-cljs)
+
+To get things running:
 ```bash
-git clone ...
+git clone https://github.com/swerter/cljs-calc.git
+cd cljs-calc
 ```
+
+To run the web server:
+
+```bash
+lein ring server
+```
+
+
 The main differences are that it is a shorter version and that it contains also 
 a testing tutorial. It shows how to setup the testing environment.
 
@@ -13,12 +24,13 @@ a testing tutorial. It shows how to setup the testing environment.
 If you simply want to see the final application running:
 lein repl
 
-There is also a consular file (brew install consular on the mac). Thus
-you can also simply run 
+There is also a consular file (`bash brew install consular` on the mac). If you
+have consular installed you can also simply run 
 ```bash
 consular start Termfile
 ``` 
-if you have installed consular.
+and server, autotests in clojure and clojurescript, repl, and cljsrepl start up
+each in its own tab.
 
 
 ## Introduction
