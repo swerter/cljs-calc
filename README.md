@@ -29,10 +29,6 @@ numbers. This is a simple example but has all the elements of a bigger
 application: there are input elements, there is an output, and the calculation
 can be tested.
 
-## Disclaimer
-I am in no means an expert in clojure or clojurescript. What I am describing
-here is simply things that helped me.
-
 ## Let's start with a ring server
 
 First we need to setup the project
@@ -42,7 +38,7 @@ cd cljs-calc
 ```
 
 Now let's start with clojure server, that simply serves a static html page. For
-that we need to add the [ring]https://github.com/ring-clojure/ring() plugin. The 
+that we need to add the [ring](https://github.com/ring-clojure/ring) plugin. The 
 ring plugin is an API to the http level.
 
 In addition we also add the [compojure](https://github.com/weavejester/compojure.git)
@@ -103,7 +99,100 @@ you will see a browser window opening and the text appearing
 ## Add tests for the clojure code
 
 In best practice you should start with the tests. But as we are still the 
-setup phase I only add tests now. 
+setup phase I only add tests now. First we need to add the 
+[midje](https://github.com/marick/Midje.git) dependency. Midje is a testing
+framework for clojure. We also add the plugin
+[lein-midje](https://github.com/marick/lein-midje.git) to simplify running
+our tests. 
+
+Our `project.clj` now looks like this:
+```clojure
+(defproject cljs-calc "0.1.0-SNAPSHOT"
+  :description "FIXME: write description"
+  :url "http://example.com/FIXME"
+  :license {:name "Eclipse Public License"
+            :url "http://www.eclipse.org/legal/epl-v10.html"}
+  :dependencies [[org.clojure/clojure "1.4.0"]
+                 [compojure "1.1.5"]
+                 [midje "1.5.0"]]
+  :plugins [;; ring plugin
+            [lein-ring "0.8.3"]
+            [lein-midje "3.0.1"]]
+
+            ;; ring tasks configuration
+            :ring {:handler cljs-calc.core/handler}
+  )
+
+```
+
+Now that the testing setup is done, let's create a function that adds
+two numbers together. Very simple, I know, nothing of much use. But the 
+purpose of this project is to show how to setup clojure and clojurescript, 
+not how to build astronomical calculations. 
+
+Replace the automatically generated tests `test/cljs_calc/core_test.clj` with
+the following (take care with the namespace section: the namespace needs to
+have the same name as the file, but with the underscore replaced with a dash):
+
+```clojure
+(ns cljs-calc.core-test
+  (:use [midje.sweet])
+  (:require [cljs-calc.core :as core]))
+
+
+  (facts "Adder calculates the sum of two numbers"
+       (fact "1+1 = 2"
+             (core/adder 1 1) => 2)
+       (fact "2+2 = 4"
+             (core/adder 2 2) => 4)
+       (fact "0+0 = 0"
+             (core/adder 0 0) => 0))
+```
+
+Running the tests with `lein midje` should return an error like
+`Exception in thread "main" java.lang.RuntimeException: No such var: core/adder...`
+because we do yet have implemented the adder function. Add the `adder` function
+to `src/cljs-calc/core.cljs`:
+
+```clojure
+(ns cljs-calc.core
+  (:use compojure.core)
+  (:require [compojure.handler :as handler]
+            [compojure.route :as route]))
+
+(defn adder [a b]
+  (+ a b))
+
+;; defroutes macro defines a function that chains individual route
+;; functions together. The request map is passed to each function in
+;; turn, until a non-nil response is returned.
+(defroutes app-routes
+  ; to serve document root address
+  (GET "/" [] "<p>Hello from compojure</p>")
+  ; to serve static pages saved in resources/public directory
+  (route/resources "/")
+  ; if page is not found
+  (route/not-found "Page not found"))
+
+;; site function creates a handler suitable for a standard website,
+;; adding a bunch of standard ring middleware to app-route:
+(def handler
+  (handler/site app-routes))
+```
+
+Run again `lein midje` and now you should see 
+in green `All claimed facts (3) have been confirmed.`. 
+
+If you are like me you prefer to have the testing done automatically
+whenever you change a source or test file. To do so open a new
+window in the terminal and run:
+
+```bash
+lein midje --lazytest
+```
+
+If you still have your ring server running and reload the page you should now
+see our beautiful calculation of 2 + 2 = 4.
 
 
 
