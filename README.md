@@ -24,7 +24,7 @@ a testing tutorial. It shows how to setup the testing environment.
 If you simply want to see the final application running:
 lein repl
 
-There is also a consular file (`bash brew install consular` on the mac). If you
+There is also a [Consular](https://github.com/achiu/consular) file. If you
 have consular installed you can also simply run 
 ```bash
 consular start Termfile
@@ -180,12 +180,11 @@ to `src/cljs-calc/core.cljs`:
 ;; turn, until a non-nil response is returned.
 (defroutes app-routes
   ; to serve document root address
-  (GET "/" [] "<p>Hello from compojure</p>")
+  (GET "/" [] (str "<p>Calculating: 2 + 2 = " (adder 2 2) "</p>"))
   ; to serve static pages saved in resources/public directory
   (route/resources "/")
   ; if page is not found
   (route/not-found "Page not found"))
-
 ;; site function creates a handler suitable for a standard website,
 ;; adding a bunch of standard ring middleware to app-route:
 (def handler
@@ -204,7 +203,64 @@ lein midje --lazytest
 ```
 
 If you still have your ring server running and reload the page you should now
-see our beautiful calculation of 2 + 2 = 4.
+see our beautiful calculation of 2 + 2 = 4. If not, start the ring server
+again with:
+```bash
+lein run server
+```
+
+## Intermezzo: Use consular to manage all these terminals
+
+In the meantime we already have at least two terminal instances open: one
+for the ring server and the other with the midje autotest. If you are
+like me you also have the repl open to try out things. That makes already
+three terminal instances. To always open all these instances whenever I continue
+working on the project is a pain. Lucky for us there is help: 
+[Consular](https://github.com/achiu/consular). To install consular you run
+```bash
+gem install consular
+```
+
+Afterwards, you need to add the core for the terminal program you use. For
+instance, for the mac os x terminal
+```bash
+gem install consular-osx
+```
+
+In case you use iTerm run
+```bash
+gem install consular-iterm
+```
+
+Finally, you also need to load the terminal driver by running
+```bash
+consular init
+```
+which should generate a configure file loading the correct driver for your
+teminal. In case of difficulties check the homepage of
+[Consular](https://github.com/achiu/consular).
+
+Now that we have consular installed, we need to write a Termfile to configure
+what to start. Generate a file `Termfile.term` with the following content:
+```ruby
+curdir = Dir.pwd
+
+tab "Ring server" do
+    run "cd #{curdir}"
+    run "lein ring server"
+  end
+  tab "clj autotest" do
+    run "cd #{curdir}"
+    run "lein midje --lazytest"
+  end
+  tab "Repl" do
+    run "cd #{curdir}"
+    run "lein repl"
+  end
+end
+```
+
+
 
 
 

@@ -1,0 +1,13 @@
+window do
+  before "cd #{Dir.pwd}"
+  tab "Ring server" do
+    run "lein ring server"
+  end
+  tab "clj autotest" do
+    run "lein midje --lazytest"
+  end
+  tab "Repl" do
+    run "lein repl"
+  end
+end
+
